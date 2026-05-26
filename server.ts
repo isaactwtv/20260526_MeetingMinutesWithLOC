@@ -1,5 +1,6 @@
 import express from "express";
 import path from "path";
+import fs from "fs";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
@@ -8,7 +9,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
 // Enable JSON parser with larger limit for big transcripts
 app.use(express.json({ limit: "15mb" }));
@@ -121,18 +122,29 @@ if (process.env.NODE_ENV !== "production") {
     app.use(vite.middlewares);
     
     // Fallback error handler
-    app.listen(PORT, "0.0.0.0", () => {
-      console.log(`[Dev Server] Running on http://localhost:${PORT}`);
-    });
+    if (!process.env.VERCEL) {
+      app.listen(PORT, "0.0.0.0", () => {
+        console.log(`[Dev Server] Running on http://localhost:${PORT}`);
+      });
+    }
   });
 } else {
-  const distPath = path.join(process.cwd(), "dist");
+  // Check if "dist" directory exists at the root, otherwise fall back to __dirname
+  let distPath = path.join(process.cwd(), "dist");
+  if (!fs.existsSync(distPath)) {
+    distPath = __dirname;
+  }
+
   app.use(express.static(distPath));
   app.get("*", (req, res) => {
     res.sendFile(path.join(distPath, "index.html"));
   });
 
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`[Prod Server] Running on port ${PORT}`);
-  });
+  if (!process.env.VERCEL) {
+    app.listen(PORT, "0.0.0.0", () => {
+      console.log(`[Prod Server] Running on port ${PORT}`);
+    });
+  }
 }
+
+export default app;

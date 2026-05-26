@@ -14,7 +14,7 @@ export default function Header() {
               <div className="flex items-center space-x-2">
                 <h1 className="text-lg font-bold text-slate-900 tracking-tight">AI 智慧會議記錄與翻譯工具</h1>
                 <span className="hidden sm:inline-block bg-indigo-50 text-indigo-700 text-xs px-2.5 py-0.5 rounded-full font-medium border border-indigo-100">
-                  Gemini 3.5 核心
+                  多 AI 核心支援
                 </span>
               </div>
               <p className="text-xs text-slate-500 hidden sm:block">一鍵提煉精華，支援多國語言翻譯與 Action Items 智能提取</p>

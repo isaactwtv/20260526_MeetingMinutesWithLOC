@@ -27,8 +27,8 @@ export default function App() {
   const [inputText, setInputText] = useState("");
   const [outputStyle, setOutputStyle] = useState("standard");
   const [targetLanguage, setTargetLanguage] = useState("zh");
-  const [selectedModel, setSelectedModel] = useState("gemini-3.5-flash");
-  const [actualModelUsed, setActualModelUsed] = useState("gemini-3.5-flash");
+  const [selectedProvider, setSelectedProvider] = useState("gemini");
+  const [actualModelUsed, setActualModelUsed] = useState("");
   
   const [isLoading, setIsLoading] = useState(false);
   const [apiResult, setApiResult] = useState<string | null>(null);
@@ -59,7 +59,7 @@ export default function App() {
     setErrorMsg(null);
 
     try {
-      const response = await fetch("/api/summarize", {
+      const response = await fetch("/api/generate", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -68,7 +68,7 @@ export default function App() {
           content: inputText,
           style: outputStyle,
           targetLanguage: targetLanguage,
-          model: selectedModel,
+          provider: selectedProvider,
         }),
       });
 
@@ -212,23 +212,20 @@ export default function App() {
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Dropdown: Core Model Selection */}
+              {/* Dropdown: AI Service Provider Selection */}
               <div className="flex flex-col">
                 <label className="text-xs text-slate-500 font-medium mb-1.5 flex items-center space-x-1">
                   <Cpu className="h-3.5 w-3.5 text-indigo-550 mr-0.5" />
-                  <span>核心 AI 模型 (LLM Model)</span>
+                  <span>AI 服務提供商</span>
                 </label>
                 <select
-                  value={selectedModel}
-                  onChange={(e) => {
-                    setSelectedModel(e.target.value);
-                  }}
+                  value={selectedProvider}
+                  onChange={(e) => setSelectedProvider(e.target.value)}
                   className="p-2.5 rounded-lg border border-slate-200 focus:border-indigo-500 focus:outline-hidden text-xs text-slate-700 bg-white font-medium shadow-xs"
-                  id="select-core-model"
+                  id="select-ai-provider"
                 >
-                  <option value="gemini-3.5-flash">🚀 Gemini 3.5 Flash (預設)</option>
-                  <option value="gemini-3.1-flash-lite">⚡ Gemini 3.1 Lite (極速型)</option>
-                  <option value="gemini-3.1-pro-preview">🧠 Gemini 3.1 Pro (付費級高推理)</option>
+                  <option value="gemini">🚀 Google Gemini 2.5 Flash Lite (預設)</option>
+                  <option value="nvidia">⚡ NVIDIA Nemotron Mini 4B</option>
                 </select>
               </div>
 
@@ -274,12 +271,12 @@ export default function App() {
               </div>
             </div>
 
-            {/* Hint message specifically for the Pro model */}
-            {selectedModel === "gemini-3.1-pro-preview" && (
-              <div className="bg-indigo-50/50 border border-indigo-100 rounded-xl p-3 text-xs flex items-start space-x-2 animate-pulse" id="pro-model-hint">
-                <Sparkles className="h-4 w-4 text-indigo-500 shrink-0 mt-0.5" />
-                <p className="leading-relaxed text-indigo-700">
-                  您已選取 <strong>Gemini 3.1 Pro (付費級)</strong>。此模型具備極強的推理與多語言辨識對照能力。請確保您的 AI Studio 帳戶已配置足夠的配額支援。
+            {/* Hint message specifically for the NVIDIA model */}
+            {selectedProvider === "nvidia" && (
+              <div className="bg-teal-50/50 border border-teal-100 rounded-xl p-3 text-xs flex items-start space-x-2" id="nvidia-provider-hint">
+                <Sparkles className="h-4 w-4 text-teal-500 shrink-0 mt-0.5" />
+                <p className="leading-relaxed text-teal-700">
+                  您已選取 <strong>NVIDIA Nemotron Mini 4B</strong>。此模型由 NVIDIA 提供，具備高效推理能力。請確保伺服器端已正確設定 <code className="bg-teal-100 px-1 rounded">NVIDIA_API_KEY</code> 環境變數。
                 </p>
               </div>
             )}
@@ -467,7 +464,7 @@ export default function App() {
             {/* Mini Footer metadata info */}
             {apiResult && !isLoading && (
               <div className="border-t border-slate-100 pt-3 mt-4 flex justify-between items-center text-2xs text-slate-400 shrink-0">
-                <span>模型搭載：<strong className="text-indigo-600 font-semibold">{actualModelUsed}</strong> (AI Studio)</span>
+                <span>模型搭載：<strong className="text-indigo-600 font-semibold">{actualModelUsed || (selectedProvider === "nvidia" ? "nvidia/nemotron-mini-4b-instruct" : "gemini-2.5-flash-lite")}</strong></span>
                 <span>報告格式：標準 Markdown 規範 (.md)</span>
               </div>
             )}
